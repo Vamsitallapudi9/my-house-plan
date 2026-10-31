@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Plot 26x94 ft plan</title>
+<style>
+:root{--text-primary:#1f1f1f;--text-secondary:#5f5e5a;--text-accent:#185FA5;--bg-accent:#E6F1FB;--bg-success:#EAF3DE;--bg-warning:#FAEEDA;--surface-1:#F1EFE8;--surface-2:#fff;--border-strong:#888780;--border-stronger:#444441;--font-sans:Helvetica,Arial,sans-serif}
+body{margin:0;background:#fff}svg{display:block;max-width:760px;margin:auto}
+</style></head><body>
+<svg id="p" width="100%" viewBox="0 0 680 760" role="img"></svg>
+<script>
+const S=7,NS='http://www.w3.org/2000/svg',svg=document.getElementById('p'),oy=50;
+svg.innerHTML='<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5"/></marker></defs>';
+function el(n,a){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);svg.appendChild(e);return e}
+function T(x,y,s,sz=11,w=400){const L=s.split('\n');const e=el('text',{x,y:y-(L.length-1)*sz*0.6,'text-anchor':'middle','dominant-baseline':'central','font-size':sz,'font-weight':w,fill:'var(--text-primary)','font-family':'var(--font-sans)'});L.forEach((l,i)=>{const t=document.createElementNS(NS,'tspan');t.setAttribute('x',x);t.setAttribute('dy',i?sz*1.25:0);t.textContent=l;e.appendChild(t)})}
+function R(ox,x1,y1,x2,y2,lab,fill,dash,sz){el('rect',{x:ox+x1*S,y:oy+y1*S,width:(x2-x1)*S,height:(y2-y1)*S,fill:fill||'none',stroke:'var(--border-stronger)','stroke-width':dash?1:0.8,'stroke-dasharray':dash?'4 3':'0'});if(lab)T(ox+(x1+x2)/2*S,oy+(y1+y2)/2*S,lab,sz||11)}
+function cols(ox,ys){[1.5,12.25,23].forEach(x=>ys.forEach(y=>el('rect',{x:ox+x*S-3,y:oy+y*S-3,width:6,height:6,fill:'var(--text-secondary)'})))}
+function base(ox,title){T(ox+91,16,title,13,500);el('rect',{x:ox-10,y:28,width:202,height:16,fill:'var(--surface-1)',stroke:'var(--border-strong)','stroke-width':0.5});T(ox+91,36,'Main road (north), plot width 26 ft',11);
+R(ox,0,0,26,94,'', 'none',1);R(ox,0,10,1.5,76,'','var(--surface-1)');R(ox,23,10,26,76,'3′','var(--surface-1)');T(ox-14,oy+300,'1.5′',11);
+R(ox,2,1,9,10,'Stair\nup','var(--surface-1)');}
+const A=60,B=400;
+base(A,'Ground level: cellar');
+T(A+14.5*S,oy+5.5*S,'Front yard\nbike parking',11);
+R(A,1.5,10,23,64,'','var(--bg-accent)');
+T(A+12.25*S,oy+29*S,'Cellar, phase 1\nrental hall 21.5 × 54 ft',12,500);
+R(A,1.5,54,7.5,64,'WC','var(--surface-2)');
+R(A,12,9.6,21,10.4,'','var(--text-accent)');T(A+16.5*S,oy+12.5*S,'Cellar entry',11);
+R(A,1.5,64,23,76,'','none',1);R(A,1.5,66,8,76,'Vault','none',1);T(A+16*S,oy+70*S,'Future extension\n21.5 × 12 ft',11);
+T(A+13*S,oy+85*S,'Rear yard\nseptic, soak pit, plants',11);
+cols(A,[10,23.5,37,50.5,64,76]);
+base(B,'First level: 2 BHK');
+R(B,1.5,10,23,64,'','var(--surface-1)');T(B+12.25*S,oy+13*S,'Front terrace: plants, table',11);
+R(B,1.5,64,23,76,'','none',1);T(B+12.25*S,oy+70*S,'Rear terrace\n(after phase 2)',11);
+const G='var(--bg-success)',W='var(--surface-2)';
+R(B,3,16,15,28,'Living',G,0,12);
+R(B,15,16,21.5,28,'Entry',G);
+R(B,18.5,16,21.5,20,'P','var(--bg-warning)');
+R(B,3,28,13,39,'Bedroom 2',G);
+R(B,3,39,8.5,46,'Bath',W);
+R(B,8.5,39,13,53,'Lobby',W);
+R(B,3,46,8.5,53,'Bath',W);
+R(B,3,53,13,64,'Master\nbedroom',G);
+R(B,13,28,21.5,42,'Dining',G,0,12);
+R(B,13,42,21.5,57,'Open\nkitchen',G,0,12);
+R(B,13,57,21.5,64,'Wash',W);
+R(B,15.5,15.7,19,16.3,'','var(--text-accent)');
+el('line',{x1:598,y1:oy,x2:598,y2:oy+94*S,stroke:'var(--text-secondary)','stroke-width':0.8,'marker-start':'url(#ar)','marker-end':'url(#ar)'});
+T(630,oy+47*S,'94 ft',12);
+el('line',{x1:636,y1:100,x2:636,y2:72,stroke:'var(--text-primary)','stroke-width':1.2,'marker-end':'url(#ar)'});T(636,62,'N',13,500);
+const lg=[['var(--bg-accent)','Cellar',0],['var(--bg-success)','Living rooms',0],['var(--surface-2)','Wet and service',0],['none','Future (dashed)',1]];
+lg.forEach((g,i)=>{const x=60+i*150;el('rect',{x,y:728,width:16,height:12,fill:g[0],stroke:'var(--border-stronger)','stroke-dasharray':g[2]?'3 2':'0'});const t=el('text',{x:x+22,y:734,'dominant-baseline':'central','font-size':11,fill:'var(--text-secondary)','font-family':'var(--font-sans)'});t.textContent=g[1]});
+</script></body></html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>26' × 94' north-facing plot — cellar + 2 BHK — plans and 3D</title>
+<style>
+body{font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;margin:0;color:#222;background:#f6f5f1;line-height:1.5}
+header{padding:18px 28px;background:#fff;border-bottom:1px solid #ddd}
+h1{font-size:21px;margin:0 0 2px;font-weight:600}h2{font-size:17px;margin:30px 0 10px;font-weight:600}
+.sub{color:#666;font-size:13px}
+.wrap{max-width:1300px;margin:auto;padding:0 24px 50px}
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+figure{margin:0;background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px}
+figcaption{font-weight:600;margin:0 0 6px 4px}
+svg.plan{width:100%;height:auto;font-family:inherit}
+.dl{stroke:#555;stroke-width:.6}.dt{stroke:#222;stroke-width:1}.dtx{font-size:8.5px;fill:#333}
+.rn{font-size:9.5px;font-weight:600;fill:#222}.rd{font-size:8px;fill:#444}.nt{font-size:8px;fill:#555}
+#v3d{height:680px;position:relative;background:#e9eef2;border:1px solid #ccc;border-radius:8px;overflow:hidden}
+.lbl{font-size:10px;background:rgba(255,255,255,.88);padding:1px 5px;border-radius:3px;white-space:nowrap;text-align:center;line-height:1.25;border:1px solid #ccc}
+.lbl b{font-weight:600}.dim3{font-size:11px;color:#a11;font-weight:600;background:rgba(255,255,255,.8);padding:0 4px;border-radius:3px}
+.ctl{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:8px 0;font-size:13px}
+.ctl select{font-size:13px;padding:3px 6px}
+table{border-collapse:collapse;width:100%;background:#fff;font-size:13px}
+td,th{border:1px solid #ddd;padding:5px 8px;text-align:left;vertical-align:top}th{background:#f1efe8;font-weight:600}
+td.n{text-align:right;white-space:nowrap}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.warn{background:#fff7e6;border:1px solid #f0c36d;border-radius:8px;padding:10px 14px;font-size:13px}
+@media(max-width:900px){.plans,.cols{grid-template-columns:1fr}}
+</style></head><body>
+<header><h1>North-facing house on 26' × 94' plot: rentable cellar + 2 BHK above</h1>
+<div class="sub">Concept / preliminary design drawings, revision 3 (layout from the mestri's sketch). All dimensions in feet-inches. Room sizes are clear (inside-wall) dimensions, width (E–W) × depth (N–S). External walls 9", internal walls 4½".</div></header>
+<div class="wrap">
+
+<h2>Key figures</h2>
+<table id="kf"></table>
+
+<h2>Floor plans</h2>
+<div class="plans">
+<figure><figcaption>First floor: 2 BHK house (family)</figcaption><svg class="plan" id="ffp"></svg></figure>
+<figure><figcaption>Ground floor: cellar (open shell, any tenant)</figcaption><svg class="plan" id="gfp"></svg></figure>
+</div>
+
+<h2>Main entrance as per Vastu (north-facing)</h2>
+<p style="font-size:14px;margin:0 0 8px">The main door faces <b>north</b>: it is on the house's north wall and you step out facing the road. Vastu divides the north side into 8 padas, counted from the north-west corner (N1) to the north-east corner (N8). N3 Mukhya, N4 Bhallata and N5 Soma are the auspicious ones. The door and the compound gate are both placed inside those three padas.</p>
+<figure><svg class="plan" id="pada"></svg></figure><br>
+<table id="ent"></table>
+
+<h2>3D model</h2>
+<div class="ctl">
+<label>View <select id="view"><option value="ff">First floor (roof off)</option><option value="all">Whole building</option><option value="gf">Cellar only</option></select></label>
+<label><input type="checkbox" id="cut"> Cut walls at 4 ft (doll-house)</label>
+<label><input type="checkbox" id="lbl" checked> Room labels</label>
+<label><input type="checkbox" id="dim" checked> Dimensions</label>
+<span class="sub">Drag to rotate · scroll to zoom · right-drag to pan. A detailed walkthrough of the house is in <a href="2bhk-3d.html">2bhk-3d.html</a>.</span>
+</div>
+<div id="v3d"></div>
+
+<h2>Schedules</h2>
+<div class="cols">
+<div><table id="ffs"></table></div>
+<div><table id="gfs"></table><br><table id="lvl"></table></div>
+</div>
+
+<h2>Vastu compliance (north-facing)</h2>
+<table id="vastu"></table>
+
+<h2>Structural scheme (preliminary)</h2>
+<table id="str"></table>
+
+<h2>Must verify before construction</h2>
+<div class="warn" id="ver"></div>
+</div>
+
+<script>
+/* ---------- data (feet; x = west→east from the west boundary, y = north→south from the road boundary) ---------- */
+const fi=v=>{const t=Math.round(v*24)/2,f=Math.floor(t/12+1e-9),i=t-f*12;return f+"'"+Math.floor(i+1e-9)+(i%1>0.01?'½':'')+'"'};
+const Rm=(n,x1,y1,x2,y2,k,o={})=>({n,x1,y1,x2,y2,k,...o});
+const O=(x1,y1,x2,y2,t,s)=>({x1,y1,x2,y2,t,s});
+const PLOT={w:26,d:94};
+// building: x 1.5–23.5 (W gap 1'6", E gap 2'6"), y 10–85 (cellar), house y 17–79
+const GF={base:1.5,H:11-5/12,
+ env:[[1.5,10,23.5,85]],
+ rooms:[Rm('Stair',2.25,10.75,8.75,25,'stair',{nolbl:1}),
+  Rm('Hall',9.5,10.75,22.75,25.75,'hall',{nolbl:1}),
+  Rm('Hall',2.25,25.75,22.75,76.25,'hall',{nolbl:1}),
+  Rm('Hall',14.625,76.25,22.75,84.25,'hall',{nolbl:1}),
+  Rm('Toilet',2.25,76.625,7.25,84.25,'wet'),
+  Rm('Store / pantry',7.625,76.625,14.25,84.25,'svc')],
+ walls:[],
+ ops:[O(3,10,6,10.75,'door','S'),O(9.75,10,12.75,10.75,'door','S'),O(15.25,10,22.25,10.75,'shutter'),
+  O(3.25,76.25,5.75,76.625,'door','S'),O(9.5,76.25,12.5,76.625,'door','S'),O(16,84.25,19,85,'door','N'),
+  O(22.75,28,23.5,32,'hiwin'),O(22.75,37,23.5,43,'hiwin'),O(22.75,57,23.5,63,'hiwin'),O(22.75,72,23.5,76,'hiwin'),
+  O(1.5,27,2.25,32,'hiwin'),O(1.5,38,2.25,43,'hiwin'),O(1.5,57,2.25,62,'hiwin'),
+  O(1.5,80,2.25,82,'vent'),O(1.5,17,2.25,20,'win')]};
+const FF={base:12.5,H:10.5-5/12,
+ env:[[1.5,17,23.5,79],[1.5,10,9.5,25],[1.5,79,7.25,85],[18.5,79,23.5,85]],
+ rooms:[Rm('Stair',2.25,10.75,8.75,25,'stair',{nolbl:1}),
+  Rm('Living hall',9.5,17.75,22.75,25.75,'room',{nolbl:1}),
+  Rm('Living hall',2.25,25.75,22.75,33.75,'room',{lbl:[8.6,30.2],sz:'L-shaped, 20\'6" × 16\'0"',area:270}),
+  Rm('Pooja',19.75,17.75,22.75,21.75,'pooja'),
+  Rm('Family hall',14.625,33.75,22.75,70.25,'room'),
+  Rm('Bedroom 2',2.25,34.125,14.25,48.125,'bed'),
+  Rm('Bath 2',2.25,48.5,8,53.5,'wet'),
+  Rm('Dress',8.375,48.5,14.25,53.5,'bed'),
+  Rm('Bath 1',2.25,53.875,8,58.875,'wet'),
+  Rm('Master',8.375,53.875,14.25,59.25,'bed',{nolbl:1}),
+  Rm('Master bedroom',2.25,59.25,14.25,69.875,'bed',{sz:'12\'0" × 16\'0" overall',area:159}),
+  Rm('Dining',2.25,70.25,14.4375,78.25,'kit'),
+  Rm('Kitchen',14.4375,70.25,22.75,78.25,'kit'),
+  Rm('Guest WC',1.875,79,6.875,84.625,'wet'),
+  Rm('Utility',18.875,79,23.125,84.625,'wet')],
+ walls:[[19.375,17.75,19.75,22.125],[19.375,21.75,22.75,22.125]],
+ ops:[O(10.25,17,13.75,17.75,'door','S'),O(8.75,11.25,9.5,14.25,'door','W'),O(19.375,18.25,19.75,20.75,'door','E'),
+  O(14.25,35,14.625,38,'door','W'),O(3,48.125,5.5,48.5,'door','S'),O(9.5,53.5,12.5,53.875,'door','N'),
+  O(8,54.5,8.375,57,'door','W'),O(14.25,54.5,14.625,57.5,'door','W'),O(15,78.25,18,79,'door','N'),
+  O(8.5,78.25,11.5,79,'door','S'),O(6.875,80,7.25,82.5,'door','W'),O(18.5,79.25,18.875,81.75,'open'),
+  // windows: north and east first; west only for rooms with no other outside wall
+  O(15.25,17,18.5,17.75,'win'),O(22.75,26.5,23.5,30.5,'win'),O(22.75,38,23.5,42,'win'),O(22.75,57,23.5,61,'win'),O(22.75,72,23.5,76,'win'),
+  O(1.5,38.75,2.25,43.25,'win'),O(1.5,62,2.25,66.5,'win'),O(1.5,73,2.25,76,'win'),
+  O(1.5,50,2.25,52,'vent'),O(1.5,55.5,2.25,57.5,'vent'),O(3,84.625,5,85,'vent'),O(3,10,7,10.75,'win')],
+ furn:[[20.75,70.75,22.75,78.25,2.75,'platform'],[18,76.25,20.75,78.25,2.75,'platform'],
+  [7,41.625,12,48.125,2,'bed'],[2.25,61,8.75,67,2,'bed'],[4.5,72.75,10.5,75.75,2.5,'table'],[12,75.6,14.4,78.25,6,'fridge'],
+  [2.75,25.75,8.25,28.75,2.5,'sofa'],[20.75,26,22.75,31,2.5,'sofa'],[20.75,37.5,22.75,42.5,2.5,'sofa'],
+  [2.25,34.125,7,36.125,7,'ward'],[8.375,48.5,14.25,50.5,7,'ward'],[9.25,67.875,14.25,69.875,7,'ward'],[14.625,62,16,68,6.5,'ward'],[9.5,21.5,10.75,24.5,3,'ward'],
+  [9.875,10.375,23.125,11.875,2,'planter'],[21,13.6,22.6,15.2,2.5,'table'],
+  [21.5,79.2,23.05,81.6,3,'wash'],[21,82.3,23.05,84.5,3,'wash']]};
+const COLX=[1.875,14.4375,23.125], COLY=[10.375,17.375,25.375,33.9375,48.3125,53.6875,70.0625,78.625,84.625];
+const COLS=[...[10.375,25.375,33.9375,48.3125,53.6875,70.0625,78.625,84.625].map(y=>[1.875,y]),
+ ...[10.375,17.375,33.9375,48.3125,53.6875,70.0625,78.625,84.625].flatMap(y=>[[14.4375,y],[23.125,y]]),[9.125,10.375],[9.125,17.375],[9.125,25.375]];
+const T=0.8333, R=0.55; // tread 10", riser 6.6" (20 risers, 11'0" floor-to-floor)
+window.PLAN={PLOT,GF,FF,COLS,T,R,fi};
+
+/* ---------- 2D plans ---------- */
+const S=10,OX=90,OY=96, X=x=>OX+x*S, Y=y=>OY+y*S, NS='http://www.w3.org/2000/svg';
+const FILL={room:'#fbf8f1',bed:'#eaf2fb',wet:'#dff0ec',kit:'#fdf0e0',pooja:'#fde2b8',stair:'#efede6',hall:'#edf1f7',svc:'#efede6'};
+function E(p,n,a,t){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;p.appendChild(e);return e}
+const rect=(p,x1,y1,x2,y2,a)=>E(p,'rect',{x:X(x1),y:Y(y1),width:(x2-x1)*S,height:(y2-y1)*S,...a});
+const txt=(p,x,y,s,c='nt',a={})=>E(p,'text',{x:X(x),y:Y(y),'text-anchor':'middle','dominant-baseline':'central',class:c,...a},s);
+function dimH(p,xs,yy){E(p,'line',{x1:X(xs[0]),y1:yy,x2:X(xs.at(-1)),y2:yy,class:'dl'});
+ xs.forEach(x=>{E(p,'line',{x1:X(x),y1:yy-5,x2:X(x),y2:yy+5,class:'dl'});E(p,'line',{x1:X(x)-3,y1:yy+3,x2:X(x)+3,y2:yy-3,class:'dt'})});
+ for(let i=0;i<xs.length-1;i++){const d=xs[i+1]-xs[i];if(d>=1.4)E(p,'text',{x:(X(xs[i])+X(xs[i+1]))/2,y:yy-4,'text-anchor':'middle',class:'dtx'},fi(d))}}
+function dimV(p,ys,xx){E(p,'line',{x1:xx,y1:Y(ys[0]),x2:xx,y2:Y(ys.at(-1)),class:'dl'});
+ ys.forEach(y=>{E(p,'line',{x1:xx-5,y1:Y(y),x2:xx+5,y2:Y(y),class:'dl'});E(p,'line',{x1:xx-3,y1:Y(y)+3,x2:xx+3,y2:Y(y)-3,class:'dt'})});
+ for(let i=0;i<ys.length-1;i++){const d=ys[i+1]-ys[i];if(d>=1.9){const m=(Y(ys[i])+Y(ys[i+1]))/2;E(p,'text',{x:xx-4,y:m,transform:`rotate(-90 ${xx-4} ${m})`,'text-anchor':'middle',class:'dtx'},fi(d))}}}
+function door(p,o){const st={fill:'none',stroke:'#333','stroke-width':.6};
+ if(o.s==='S'||o.s==='N'){const w=(o.x2-o.x1)*S,d=o.s==='S'?1:-1,yf=o.s==='S'?Y(o.y2):Y(o.y1),hx=X(o.x1);
+  E(p,'path',{d:`M${hx} ${yf} L${hx} ${yf+d*w} A${w} ${w} 0 0 ${o.s==='S'?0:1} ${X(o.x2)} ${yf}`,...st})}
+ else{const w=(o.y2-o.y1)*S,d=o.s==='E'?1:-1,xf=o.s==='E'?X(o.x2):X(o.x1),hy=Y(o.y1);
+  E(p,'path',{d:`M${xf} ${hy} L${xf+d*w} ${hy} A${w} ${w} 0 0 ${o.s==='E'?1:0} ${xf} ${Y(o.y2)}`,...st})}}
+function stairs(p,up){for(let i=0;i<=9;i++){const y=13.75+i*T;E(p,'line',{x1:X(2.25),y1:Y(y),x2:X(5.25),y2:Y(y),stroke:'#777','stroke-width':.6});E(p,'line',{x1:X(5.75),y1:Y(y),x2:X(8.75),y2:Y(y),stroke:'#777','stroke-width':.6})}
+ rect(p,5.25,13.75,5.75,21.25,{fill:'#555'});
+ E(p,'path',{d:`M${X(3.75)} ${Y(14.2)} L${X(3.75)} ${Y(22.8)} L${X(7.25)} ${Y(22.8)} L${X(7.25)} ${Y(14.4)}`,fill:'none',stroke:'#a11','stroke-width':.8,'marker-end':'url(#ah)'});
+ txt(p,3.75,12.3,up?'UP':'DN','rn',{fill:'#a11'});txt(p,5.5,24.1,'Mid landing','nt');
+ txt(p,5.5,11.6,up?'':'Top landing','nt')}
+function plan(id,F,isFF){const p=document.getElementById(id),W=OX+PLOT.w*S+150,H=OY+PLOT.d*S+70;
+ p.setAttribute('viewBox',`0 0 ${W} ${H}`);
+ E(p,'defs',{}).innerHTML='<marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#a11"/></marker><pattern id="hat" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#9bb07d" stroke-width="1"/></pattern>';
+ E(p,'rect',{x:X(-6),y:OY-62,width:(PLOT.w+12)*S,height:30,fill:'#8d8d8d'});txt(p,13,-4.7,'MAIN ROAD (NORTH)','rn',{fill:'#fff'});
+ rect(p,0,0,26,94,{fill:'#f0f4e8',stroke:'#4a6b2a','stroke-width':1.2,'stroke-dasharray':'8 3'});
+ // compound wall (9" N/S, 4½" E/W), gate 9'9" in padas N3–N5
+ [[0,0,6.5,.75],[16.25,0,26,.75],[0,93.25,26,94],[25.625,.75,26,93.25],[0,.75,.375,93.25]].forEach(r=>rect(p,...r,{fill:'#777'}));
+ if(isFF){rect(p,1.5,10,23.5,85,{fill:'#ebe5d8',stroke:'#999','stroke-width':.6});
+  [[9.5,10,23.5,10.375],[23.125,10,23.5,17],[23.125,79,23.5,85],[1.5,84.625,23.5,85],[1.5,79,1.875,85]].forEach(r=>rect(p,...r,{fill:'#888'}));}
+ F.env.forEach(e=>rect(p,...e,{fill:'#2f2f2f'}));
+ F.rooms.forEach(r=>rect(p,r.x1,r.y1,r.x2,r.y2,{fill:FILL[r.k]}));
+ F.walls.forEach(w=>rect(p,...w,{fill:'#2f2f2f'}));
+ F.ops.forEach(o=>{if(o.t==='door'||o.t==='open'){rect(p,o.x1,o.y1,o.x2,o.y2,{fill:'#fbf8f1'});if(o.t==='door')door(p,o)}
+  else if(o.t==='shutter'){rect(p,o.x1,o.y1,o.x2,o.y2,{fill:'#fff'});E(p,'line',{x1:X(o.x1),y1:Y((o.y1+o.y2)/2),x2:X(o.x2),y2:Y((o.y1+o.y2)/2),stroke:'#333','stroke-dasharray':'3 2'})}
+  else{rect(p,o.x1,o.y1,o.x2,o.y2,{fill:'#fff',stroke:'#333','stroke-width':.5});const h=o.x2-o.x1>o.y2-o.y1;
+   E(p,'line',h?{x1:X(o.x1),y1:Y((o.y1+o.y2)/2),x2:X(o.x2),y2:Y((o.y1+o.y2)/2),stroke:'#4a7fb5'}:{x1:X((o.x1+o.x2)/2),y1:Y(o.y1),x2:X((o.x1+o.x2)/2),y2:Y(o.y2),stroke:'#4a7fb5'})}});
+ COLS.forEach(([cx,cy])=>{if(isFF&&(cy<17||cy>79))return;rect(p,cx-.375,cy-.75,cx+.375,cy+.75,{fill:'#000'})});
+ if(isFF)rect(p,7,16.55,15.25,18.2,{fill:'#2e8b2e',opacity:.28});
+ stairs(p,!isFF);
+ (F.furn||[]).forEach(f=>rect(p,f[0],f[1],f[2],f[3],{fill:f[5]==='planter'?'url(#hat)':'none',stroke:'#8a7f6a','stroke-width':.6,'stroke-dasharray':f[5]==='ward'?'2 1.5':'0'}));
+ F.rooms.forEach(r=>{if(r.nolbl)return;const w=r.x2-r.x1,d=r.y2-r.y1,[cx,cy]=r.lbl||[(r.x1+r.x2)/2,(r.y1+r.y2)/2];
+  if(w<6.5){txt(p,cx,cy-1.2,r.n,'rn',{style:'font-size:7.5px'});txt(p,cx,cy+.1,fi(w)+' ×','rd',{style:'font-size:7px'});txt(p,cx,cy+1.1,fi(d),'rd',{style:'font-size:7px'})}
+  else{txt(p,cx,cy-.6,r.n,'rn');txt(p,cx,cy+.6,r.sz||fi(w)+' × '+fi(d),'rd')}});
+ // dimension chains
+ dimH(p,[0,1.5,23.5,26],OY-12);
+ dimV(p,isFF?[0,10,17,79,85,94]:[0,10,85,94],X(26)+46);
+ dimV(p,[0,94],X(26)+78);
+ if(isFF){dimH(p,[1.5,2.25,14.25,14.625,22.75,23.5],Y(94)+22);
+  dimV(p,[25.75,33.75,34.125,48.125,48.5,53.5,53.875,58.875,59.25,69.875,70.25,78.25],X(0)-22);
+  dimV(p,[17.75,33.75,70.25,78.25],X(26)+20);}
+ else{ // structural grid
+  COLX.forEach((cx,i)=>{E(p,'line',{x1:X(cx),y1:Y(85),x2:X(cx),y2:Y(94)+12,stroke:'#a11','stroke-width':.4,'stroke-dasharray':'6 2 1 2'});E(p,'circle',{cx:X(cx),cy:Y(94)+22,r:9,fill:'#fff',stroke:'#a11'});txt(p,cx,96.2,'ABC'[i],'rn',{fill:'#a11'})});
+  COLY.forEach((cy,i)=>{E(p,'line',{x1:X(0)-12,y1:Y(cy),x2:X(1.5),y2:Y(cy),stroke:'#a11','stroke-width':.4,'stroke-dasharray':'6 2 1 2'});E(p,'circle',{cx:X(0)-22,cy:Y(cy),r:8,fill:'#fff',stroke:'#a11'});txt(p,-2.2,cy,String(i+1),'rn',{fill:'#a11'})});
+  dimH(p,COLX,Y(94)+40);}
+ // compass and side labels
+ const cx=W-38,cy=OY+20;E(p,'circle',{cx,cy,r:17,fill:'#fff',stroke:'#333'});E(p,'path',{d:`M${cx} ${cy-15} L${cx+6} ${cy+8} L${cx} ${cy+3} L${cx-6} ${cy+8}Z`,fill:'#a11'});E(p,'text',{x:cx,y:cy-22,'text-anchor':'middle',class:'rn'},'N');
+ txt(p,13,95.6,'SOUTH (rear)','nt');E(p,'text',{x:X(26)+106,y:Y(60),class:'nt',transform:`rotate(90 ${X(26)+106} ${Y(60)})`,'text-anchor':'middle'},'EAST — 94\'0" side');
+ E(p,'text',{x:X(0)-46,y:Y(60),class:'nt',transform:`rotate(-90 ${X(0)-46} ${Y(60)})`,'text-anchor':'middle'},'WEST');
+ E(p,'text',{x:X(24.75),y:Y(50),class:'nt',transform:`rotate(90 ${X(24.75)} ${Y(50)})`,'text-anchor':'middle'},'East passage 2\'6" (2\'1½" clear)');
+ E(p,'text',{x:X(.95),y:Y(50),class:'nt',transform:`rotate(-90 ${X(.95)} ${Y(50)})`,'text-anchor':'middle'},'West passage 1\'6" (1\'1½" clear)');
+ if(isFF){txt(p,17.5,12.7,'Front sit-out','rn');txt(p,17.5,13.8,'14\'0" × 7\'0"','rd');
+  txt(p,16.6,16,'Main door 3\'6" (N4–N5)','nt');
+  txt(p,21.75,73.3,'sink','nt');txt(p,21.75,77,'hob','nt');txt(p,13.2,76.9,'fridge','nt');txt(p,18.6,66.5,'wash basin','nt');
+  txt(p,13,81.6,'Drying area','rn');txt(p,13,82.8,'open, 11\'3" wide','rd');txt(p,22,83.6,'washing machine','nt');
+  txt(p,13,88.6,'Green band on the north wall = auspicious door zone N3–N5','nt');txt(p,13,89.8,'House 22\'0" × 62\'0" (cellar roof below forms the sit-out and rear terrace)','nt')}
+ else{txt(p,8.1,41,'CELLAR HALL — open shell','rn');txt(p,8.1,42.4,'20\'6" clear width × up to 73\'6"','rd');txt(p,8.1,43.6,'9\'6" clear under beams','rd');txt(p,8.1,44.8,'tenant partitions as needed','rd');
+  txt(p,11.25,8.9,'Door 3\'0"','nt');txt(p,18.75,8.9,'Shutter 7\'0" × 9\'0"','nt');rect(p,2.25,7.75,22.75,10,{fill:'none',stroke:'#999','stroke-width':.5});txt(p,12.5,7.2,'3 steps (plinth +1\'6")','nt');
+  txt(p,8,4,'Front yard 10\'0" · 2-wheeler parking','rn');txt(p,11.4,1.9,'Gate 9\'9" (N3–N5)','nt');rect(p,6.5,-.3,16.25,1.05,{fill:'#2e8b2e',opacity:.28});
+  rect(p,22,1.5,25,4.5,{fill:'#d7e8f5',stroke:'#4a7fb5','stroke-width':.6});txt(p,23.5,3,'Sump','nt');E(p,'circle',{cx:X(24),cy:Y(6.5),r:6,fill:'#d7e8f5',stroke:'#4a7fb5'});txt(p,21.2,6.5,'Borewell','nt');
+  rect(p,3,87,11,92,{fill:'#eee',stroke:'#777','stroke-width':.6});txt(p,7,89.5,'Septic 8\'×5\'','nt');E(p,'circle',{cx:X(15),cy:Y(89.5),r:18,fill:'#eee',stroke:'#777'});txt(p,15,89.5,'Soak pit','nt');
+  txt(p,21,89.5,'Rear yard 9\'0"','nt');txt(p,17.5,85.8,'Rear exit','nt');txt(p,4.5,9.1,'Stair entry','nt')}
+}
+plan('ffp',FF,true);plan('gfp',GF,false);
+
+/* ---------- tables ---------- */
+const tbl=(id,head,rows)=>document.getElementById(id).innerHTML='<tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr>'+rows.map(r=>'<tr>'+r.map((c,i)=>`<td${i&&typeof c==='number'?' class="n"':''}>${c}</td>`).join('')+'</tr>').join('');
+const A=(...rs)=>Math.round(rs.reduce((a,[x1,y1,x2,y2])=>a+(x2-x1)*(y2-y1),0));
+tbl('kf',['Item','Value'],[
+ ['Plot','26\'0" (N road frontage) × 94\'0" (E–W sides) = 2,444 sq ft = <b>5.61 cents</b> (1 cent = 435.6 sq ft) = 271.6 sq yd = 227 m²'],
+ ['Setbacks','North (front) 10\'0" · South (rear) 9\'0" · West 1\'6" · East 2\'6"'],
+ ['Ground floor (cellar) built-up','22\'0" × 75\'0" = 1,650 sq ft (incl. 120 sq ft stair core) → rentable ≈ 1,530 sq ft built-up / ≈ 1,300 sq ft carpet'],
+ ['First floor house built-up','22\'0" × 62\'0" less the stair cabin corner = <b>1,300 sq ft</b> (2 BHK) + stair cabin 120 sq ft'],
+ ['Rear rooms','Guest washroom 5\'0" × 5\'7½" in the SW corner and washing-machine utility 4\'3" × 5\'7½" in the SE, on the rear terrace (≈ 66 sq ft built-up)'],
+ ['First floor open areas','Front sit-out 14\'0" × 7\'0" = 98 sq ft · Rear drying area ≈ 11\'3" × 5\'7½" in the middle, open to the kitchen and dining doors'],
+ ['Ground coverage / FAR','67.5% · FAR ≈ 1.26 (3,070 sq ft total built-up)'],
+ ['Heights','Plinth +1\'6" · First floor level +12\'6" · Roof +23\'0" · Parapet top +26\'6" · Stair head room/OHT ≈ +31\'']]);
+const ffRows=[['Living hall (L-shaped, with pooja in NE)','20\'6" × 16\'0" overall',A([9.5,17.75,22.75,25.75],[2.25,25.75,22.75,33.75])-12],['Pooja','3\'0" × 4\'0"',12],
+ ['Family hall (bedroom doors open here)','8\'1½" × 36\'6"',A([14.625,33.75,22.75,70.25])],['Bedroom 2','12\'0" × 14\'0"',168],['Bath 2 (attached to bedroom 2)','5\'9" × 5\'0"',29],
+ ['Dress (master)','5\'10½" × 5\'0"',29],['Bath 1 (attached to master)','5\'9" × 5\'0"',29],['Master bedroom (incl. entry)','12\'0" × 16\'0" overall',A([2.25,59.25,14.25,69.875],[8.375,53.875,14.25,59.25])],
+ ['Dining (open to kitchen, door to the rear)','12\'2¼" × 8\'0"',98],['Kitchen (SE)','8\'3¾" × 8\'0"',67],
+ ['Guest washroom (rear SW corner, for guests)','5\'0" × 5\'7½"',28],['Utility (washing machine)','4\'3" × 5\'7½"',24]];
+const sum=ffRows.reduce((a,r)=>a+r[2],0);
+tbl('ffs',['First floor room','Clear size (W × D)','Area sq ft'],[...ffRows,['<b>Carpet total</b>','',sum],['Front sit-out','14\'0" × 7\'0"',98],['Rear open space (drying area)','11\'3" × 5\'7½" between the two rooms',63]]);
+tbl('gfs',['Ground floor space','Clear size (W × D)','Area sq ft'],[['Cellar hall (open, L-shaped)','20\'6" × 73\'6" less stair core',A([9.5,10.75,22.75,25.75],[2.25,25.75,22.75,76.25],[14.625,76.25,22.75,84.25])],['Toilet','5\'0" × 7\'7½"',38],['Store / pantry','6\'7½" × 7\'7½"',51],['Stair core (house only)','6\'6" × 14\'3"',93],['Front yard','26\'0" × 10\'0"',260],['Rear yard','26\'0" × 9\'0"',234]]);
+tbl('lvl',['Level','Value'],[['Road crown','±0\'0"'],['Ground floor finish (cellar)','+1\'6"'],['Cellar floor-to-floor','11\'0" (9\'6" clear under 18" beams)'],['First floor finish','+12\'6"'],['House floor-to-floor','10\'6" (10\'1" floor to ceiling)'],['Doors / windows','Door 7\'0" high · window sill 3\'0", head 7\'0" · bath vent 5\'0"–7\'0"'],['Stair','20 risers × 6.6" · tread 10" · flight width 3\'0" · dog-leg, mid landing 3\'9"']]);
+tbl('vastu',['Element','Placed','Vastu guidance'],[
+ ['House facing / main door','North wall, padas N4 Bhallata + N5 Soma (door 3\'6", see entrance section)','Door on the north wall in N3–N5 for a north-facing house ✓'],
+ ['Compound gate','North boundary, padas N3–N5 (9\'9" wide)','Gate on the north side in N3–N5 ✓'],
+ ['Pooja','NE corner of the living hall, door on west','NE (Ishanya), worshipper faces east ✓'],
+ ['Living hall','North and north-east','North or NE ✓'],
+ ['Kitchen','South-east corner, cook faces east, hob in SE, sink in NE of kitchen','Agneya (SE) ✓'],
+ ['Dining','South / south-west, open to the kitchen','West or south acceptable; next to the kitchen ✓'],
+ ['Master bedroom','West, between the baths and the dining, bed head to west wall','SW corner is ideal; here the SW corner is dining, so the master sits just north of it (compromise)'],
+ ['Bedroom 2','West / north-west, bed head to south','West or NW ✓'],
+ ['Toilets','Bedroom baths on the west wall, out of the centre','W / WNW ✓; none in NE or centre ✓'],
+ ['Guest washroom','South-west corner of the rear terrace, outside the main house wall (by choice, keeps the middle open)','Vastu strongly avoids toilets in the SW. Being outside the main wall softens it, but this is the one real compromise; the SE corner (swapping with the utility) would comply'],
+ ['Washing machine','Utility in the south-east of the rear terrace, beside the kitchen door','SE or NW ✓'],
+ ['Windows','North and east on every room that has those walls; west only for bedrooms and dining, which have no other outside wall; no south windows','More openings on N and E, fewer on S and W ✓'],
+ ['Brahmasthan (centre)','Family hall + dress room (dry)','Centre kept free of toilets and kitchen ✓'],
+ ['Staircase','North-west, ascending clockwise','S / W / NW acceptable; avoid NE ✓'],
+ ['Water','Sump + borewell NE; overhead tank on roof SW','Underground water NE, overhead tank SW ✓'],
+ ['Septic','Rear yard, west half','Ideal is W/NW; long narrow plot forces rear (compromise)'],
+ ['Open space','East gap 2\'6" wider than west 1\'6"; north has 10\' yard + 7\' sit-out','More open on N and E than S and W ✓']]);
+tbl('str',['Element','Preliminary size / spec'],[
+ ['System','RCC framed structure on grid A–C × 1–9 (27 columns incl. stair core); brick/AAC infill. Design loads for G+2 so a second floor can be added later.'],
+ ['Grid spans','E–W: A–B 12\'6¾", B–C 8\'8¼". N–S: 7\'0", 8\'0", 8\'6¾", 14\'4½", 5\'4½", 16\'4½", 8\'6¾", 6\'0"'],
+ ['Columns','9" × 18" (230 × 450 mm), long side N–S; interior row B is freestanding in the cellar'],
+ ['Beams','Main 9" × 18" (230 × 450 mm); the 16\'4½" master-bedroom span likely needs 9" × 21"; plinth beams 9" × 12"'],
+ ['Slabs','5" (125 mm) two-way RCC; bath floors sunken 1\'0" for drain runs; terrace slabs waterproofed with 1:100 slope'],
+ ['Footings','Isolated pad ≈ 5\'0" × 5\'0" × 1\'6" at ≈ 5\'0" depth (confirm with soil test, combine where footings clash)'],
+ ['Materials','Concrete M25, steel Fe500D, 9" external / 4½" internal walls, cement mortar 1:6 / 1:4'],
+ ['Extension readiness','Starter bars left on roof columns; stair continues to roof; cellar hall has no load-bearing partitions, so tenants can re-partition freely']]);
+document.getElementById('ver').innerHTML=`<ul style="margin:0;padding-left:18px">
+<li><b>Bylaws:</b> 1'6" west and 2'6" east side setbacks, 67.5% coverage and commercial use of the cellar must be checked with your local authority (municipality / DTCP / panchayat). Many authorities also require parking for commercial floor area.</li>
+<li><b>Side passages:</b> with 4½" compound walls the clear passage is 2'1½" on the east and only 1'1½" on the west. The west gap is for drain pipes and maintenance, not for walking.</li>
+<li><b>House size:</b> with the 7'0" sit-out the house is 1,300 sq ft built-up. A 10'0" sit-out would make it about 1,234 sq ft.</li>
+<li><b>Structure:</b> the sizes above are preliminary concept sizes. A licensed structural engineer must design and sign the drawings after a soil test, using your seismic zone and local codes (IS 456, IS 1893, IS 13920).</li>
+<li><b>Light/ventilation:</b> windows are kept to the minimum that still gives each habitable room an opening of about 1/10 of its floor area (bedrooms 4'6" × 4'0" = 18 sq ft). Every bath has a high vent, and the dress room needs a ventilator above its door.</li>
+<li><b>Rear rooms:</b> the guest washroom and utility walls stand on the rear slab. Build them in light AAC blocks over the beam on grid 9, and slope the floors to drains that run down the rear wall to the septic tank.</li></ul>`;
+
+/* ---------- entrance padas ---------- */
+(function(){const p=document.getElementById('pada'),k=30,x0=60;p.setAttribute('viewBox','0 0 900 250');
+ const N=['Roga','Naga','Mukhya','Bhallata','Soma','Bhujaga','Aditi','Diti'],good=[2,3,4];
+ const bar=(y,a,b,title,m,ml)=>{const w=(b-a)/8;E(p,'text',{x:x0+a*k,y:y-24,class:'rn'},title);
+  E(p,'text',{x:x0+a*k,y:y-7,class:'rd'},'NW corner');E(p,'text',{x:x0+b*k,y:y-7,'text-anchor':'end',class:'rd'},'NE corner');
+  for(let i=0;i<8;i++){const x=x0+(a+i*w)*k;E(p,'rect',{x,y,width:w*k,height:36,fill:good.includes(i)?'#cfe8c0':'#f3e1dc',stroke:'#777','stroke-width':.6});
+   E(p,'text',{x:x+w*k/2,y:y+13,'text-anchor':'middle',class:'rn'},'N'+(i+1));E(p,'text',{x:x+w*k/2,y:y+27,'text-anchor':'middle',class:'rd'},N[i]+' · '+fi(w))}
+  E(p,'rect',{x:x0+m[0]*k,y:y+40,width:(m[1]-m[0])*k,height:8,fill:'#a11'});
+  E(p,'text',{x:x0+(m[0]+m[1])/2*k,y:y+62,'text-anchor':'middle',class:'rn',fill:'#a11'},ml)};
+ bar(40,0,26,'Plot north boundary 26\'0" — compound gate',[6.5,16.25],'Gate 9\'9", 6\'6" to 16\'3" from the NW plot corner');
+ bar(160,1.5,23.5,'House north side 22\'0" (incl. stair cabin) — main door',[10.25,13.75],'Main door 3\'6", 8\'9" to 12\'3" from the house NW corner');})();
+tbl('ent',['Item','Position','Why'],[
+ ['Main door','House north wall, padas N4 (Bhallata) and N5 (Soma). 8\'9" from the house NW corner, 9\'9" from the NE corner. 3\'6" × 7\'0", opens inward into the living hall.','N3–N5 are the auspicious north padas. N5 Soma is linked with Kubera (wealth).'],
+ ['Compound gate','North boundary, padas N3–N5. 6\'6" from the NW plot corner, 9\'9" wide.','Same rule applied to the plot boundary.'],
+ ['Avoid','N1 Roga and N2 Naga (NW end), N6 Bhujaga and N7 Aditi. N8 Diti is accepted by some texts only.','Not used for the door or gate.'],
+ ['Cellar openings','North wall at ground level, used by the tenant.','The rule above is for the family home; the cellar is a separate commercial unit.'],
+ ['Path to the door','Gate → front steps → stair (NW) → front sit-out → main door.','You approach and enter facing south, so you come out of the house facing north.']]);
+</script>
+
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {CSS2DRenderer,CSS2DObject} from 'three/addons/renderers/CSS2DRenderer.js';
+const {PLOT,GF,FF,COLS,T,R,fi}=window.PLAN;
+const host=document.getElementById('v3d'),w=host.clientWidth,h=host.clientHeight;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xe9eef2);
+const cam=new THREE.PerspectiveCamera(38,w/h,.5,2000);cam.position.set(62,70,-70);
+const ren=new THREE.WebGLRenderer({antialias:true});ren.setPixelRatio(devicePixelRatio);ren.setSize(w,h);ren.shadowMap.enabled=true;host.appendChild(ren.domElement);
+const lr=new CSS2DRenderer();lr.setSize(w,h);lr.domElement.style.cssText='position:absolute;top:0;left:0;pointer-events:none';host.appendChild(lr.domElement);
+const ctl=new OrbitControls(cam,ren.domElement);ctl.target.set(0,8,2);ctl.update();
+scene.add(new THREE.HemisphereLight(0xffffff,0x8a8070,1.2));
+const sun=new THREE.DirectionalLight(0xffffff,1.5);sun.position.set(35,90,45);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-70,right:70,top:70,bottom:-70,far:300});scene.add(sun);
+const M=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:.9,...o});
+const MAT={wall:M(0xece6da),wallG:M(0xd9d4ca),conc:M(0xb9b2a5),col:M(0x9e978a),room:M(0xf3ead8),bed:M(0xcfe0f2),wet:M(0xbfe3da),kit:M(0xf6dcb8),pooja:M(0xf7c98a),stair:M(0xd8d4cc),hall:M(0xdfe6ef),svc:M(0xe2ddd3),
+ glass:M(0x8fb8de,{transparent:true,opacity:.45}),terr:M(0xd6cbb4),furn:M(0xa58f6f),plant:M(0x6f9a4a),wash:M(0xffffff),cw:M(0x9a9a9a),road:M(0x777777),grass:M(0xc9d8ae),ground:M(0xd5dacb),blue:M(0x8fc0e6)};
+const P=(x,y,z)=>new THREE.Vector3(x-PLOT.w/2,z,y-PLOT.d/2);
+function box(g,x1,y1,x2,y2,h1,h2,m){const me=new THREE.Mesh(new THREE.BoxGeometry(x2-x1,h2-h1,y2-y1),m);me.position.copy(P((x1+x2)/2,(y1+y2)/2,(h1+h2)/2));me.castShadow=me.receiveShadow=true;g.add(me);return me}
+const GAP={door:[0,7],open:[0,99],win:[3,7],vent:[5,7],shutter:[0,9],hiwin:[6,9]};
+function walls(F,g,H,m){const c=.125,inr=(r,x,y)=>x>r[0]&&x<r[2]&&y>r[1]&&y<r[3];
+ const bx1=Math.min(...F.env.map(e=>e[0])),by1=Math.min(...F.env.map(e=>e[1])),bx2=Math.max(...F.env.map(e=>e[2])),by2=Math.max(...F.env.map(e=>e[3]));
+ const nx=Math.round((bx2-bx1)/c),ny=Math.round((by2-by1)/c),rooms=F.rooms.map(r=>[r.x1,r.y1,r.x2,r.y2]),ops=F.ops.map(o=>[o.x1,o.y1,o.x2,o.y2,o.t]);
+ const act=new Map(),out=[];
+ for(let j=0;j<=ny;j++){const runs=new Set();
+  if(j<ny){const y=by1+(j+.5)*c;let cur=null;
+   for(let i=0;i<=nx;i++){let k=null;if(i<nx){const x=bx1+(i+.5)*c;
+     if(F.env.some(e=>inr(e,x,y))&&(!rooms.some(r=>inr(r,x,y))||F.walls.some(r=>inr(r,x,y)))){const o=ops.find(o=>inr(o,x,y));k=o?o[4]:'solid'}}
+    if(k!==(cur?cur.k:null)){if(cur)runs.add(cur.i0+','+i+','+cur.k);cur=k?{i0:i,k}:null}}}
+  for(const [key,a] of act)if(!runs.has(key)){out.push({...a,j1:j});act.delete(key)}
+  for(const key of runs)if(!act.has(key)){const [i0,i1,k]=key.split(',');act.set(key,{i0:+i0,i1:+i1,k,j0:j})}}
+ const b=F.base;
+ for(const r of out){const x1=bx1+r.i0*c,x2=bx1+r.i1*c,y1=by1+r.j0*c,y2=by1+r.j1*c;
+  if(r.k==='solid'){box(g,x1,y1,x2,y2,b,b+H,m);continue}
+  const [g0,g1]=GAP[r.k];if(g0>0)box(g,x1,y1,x2,y2,b,b+Math.min(g0,H),m);if(g1<H)box(g,x1,y1,x2,y2,b+g1,b+H,m);
+  if(['win','vent','hiwin'].includes(r.k)&&g0<H){const t=.06,hx=x2-x1>y2-y1,cx=(x1+x2)/2,cy=(y1+y2)/2;
+   box(g,hx?x1:cx-t,hx?cy-t:y1,hx?x2:cx+t,hx?cy+t:y2,b+g0,b+Math.min(g1,H),MAT.glass)}}}
+const labels=[];
+function label(g,html,x,y,z,cls='lbl',kind='room'){const d=document.createElement('div');d.className=cls;d.innerHTML=html;const o=new CSS2DObject(d);o.position.copy(P(x,y,z));g.add(o);labels.push({o,g,kind});return o}
+function floors(F,g){F.rooms.forEach(r=>{box(g,r.x1,r.y1,r.x2,r.y2,F.base-.05,F.base+.02,MAT[r.k]);if(!r.nolbl){const [x,y]=r.lbl||[(r.x1+r.x2)/2,(r.y1+r.y2)/2];label(g,`<b>${r.n}</b><br>${r.sz||fi(r.x2-r.x1)+' × '+fi(r.y2-r.y1)}`,x,y,F.base+1.2)}})}
+const site=new THREE.Group(),gG=new THREE.Group(),gF=new THREE.Group(),gFcut=new THREE.Group(),gFfull=new THREE.Group(),gR=new THREE.Group();
+scene.add(site,gG,gF,gR);gF.add(gFcut,gFfull);
+// site
+box(site,-60,-60,86,154,-.3,-.1,MAT.ground);box(site,-60,-32,86,-2,-.1,0,MAT.road);box(site,0,0,26,94,-.1,.02,MAT.grass);
+[[0,0,6.5,.75],[16.25,0,26,.75],[0,93.25,26,94],[25.625,.75,26,93.25],[0,.75,.375,93.25]].forEach(r=>box(site,...r,0,5,MAT.cw));
+box(site,6.5,.3,16.25,.45,0,4.5,M(0x444444,{transparent:true,opacity:.5}));
+box(site,22,1.5,25,4.5,0,.15,MAT.blue);const bw=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,.4,20),MAT.blue);bw.position.copy(P(24,6.5,.2));site.add(bw);
+box(site,3,87,11,92,0,.25,MAT.conc);const sp=new THREE.Mesh(new THREE.CylinderGeometry(1.8,1.8,.3,28),MAT.conc);sp.position.copy(P(15,89.5,.15));site.add(sp);
+for(let i=0;i<3;i++)box(site,2.25,7.75+i*.75,22.75,10,0,(i+1)*.5,MAT.conc);
+label(site,'Sump + borewell (NE)',23.5,3,2,'lbl','site');label(site,'Septic + soak pit',11,89.5,2,'lbl','site');label(site,'Gate 9\'9" (Vastu N3–N5)',11.4,0,5.5,'lbl','site');label(site,'Front yard / 2-wheelers',8,4,1.5,'lbl','site');
+// ground floor
+box(gG,1.5,10,23.5,85,0,1.5,MAT.conc);floors(GF,gG);walls(GF,gG,GF.H,MAT.wallG);
+COLS.forEach(([cx,cy])=>box(gG,cx-.375,cy-.75,cx+.375,cy+.75,1.5,12.5-5/12,MAT.col));
+label(gG,'<b>Cellar hall — open shell</b><br>20\'6" clear × up to 73\'6"<br>≈1,300 sq ft carpet',8.1,45,3);
+// stair
+const sb=1.5;for(let i=0;i<9;i++)box(gG,2.25,13.75+i*T,5.25,13.75+(i+1)*T,sb,sb+(i+1)*R,MAT.stair);
+box(gG,2.25,21.25,8.75,25,sb+10*R-.42,sb+10*R,MAT.stair);
+for(let i=0;i<9;i++){const top=sb+10*R+(i+1)*R;box(gG,5.75,21.25-(i+1)*T,8.75,21.25-i*T,top-.9,top,MAT.stair)}
+box(gG,5.25,13.75,5.75,21.25,sb,12.5,MAT.wallG);
+// first floor
+[[1.5,10,23.5,13.75],[1.5,13.75,2.25,25],[8.75,13.75,23.5,25],[1.5,25,23.5,85]].forEach(r=>box(gF,...r,12.5-5/12,12.5,MAT.conc));
+box(gF,9.5,10,23.5,17,12.5,12.55,MAT.terr);box(gF,1.5,79,23.5,85,12.5,12.55,MAT.terr);
+[[9.5,10,23.5,10.375],[23.125,10,23.5,17],[23.125,79,23.5,85],[1.5,84.625,23.5,85],[1.5,79,1.875,85]].forEach(r=>box(gF,...r,12.5,15.5,MAT.wall));
+floors(FF,gF);walls(FF,gFfull,FF.H,MAT.wall);walls(FF,gFcut,4,MAT.wall);
+FF.furn.forEach(f=>box(gF,f[0],f[1],f[2],f[3],12.5,12.5+f[4],f[5]==='planter'?MAT.plant:f[5]==='wash'||f[5]==='fridge'?MAT.wash:MAT.furn));
+label(gF,'<b>Main entrance</b><br>north wall, pada N4–N5',12,16,16);label(gF,'<b>Front sit-out</b><br>14\'0" × 7\'0"',17.5,13.5,14.5);label(gF,'<b>Drying area</b>',13,82,14);
+// roof
+[[1.5,17,23.5,79],[1.5,10,9.5,25],[1.5,79,7.25,85],[18.5,79,23.5,85]].forEach(r=>box(gR,...r,23-5/12,23,MAT.conc));
+[[1.5,17,23.5,17.375],[1.5,78.625,23.5,79],[1.5,17,1.875,79],[23.125,17,23.5,79]].forEach(r=>box(gR,...r,23,26.5,MAT.wall));
+box(gR,2.5,71.5,8.5,77.5,23,28,MAT.blue);label(gR,'Overhead tank (SW)',5.5,74.5,29,'lbl','roofl');
+box(gR,1.5,10,9.5,25,23,31,MAT.wall);label(gR,'Stair head room',5.5,17,32,'lbl','roofl');
+// dimensions + north
+const dims=new THREE.Group();scene.add(dims);
+const dl=(a,b,txt,at)=>{dims.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),new THREE.LineBasicMaterial({color:0xaa1111})));const d=document.createElement('div');d.className='dim3';d.textContent=txt;const o=new CSS2DObject(d);o.position.copy(at||a.clone().lerp(b,.5));dims.add(o);labels.push({o,g:dims,kind:'dim'})};
+dl(P(0,-1.5,.3),P(26,-1.5,.3),'Plot 26\'0" (road frontage)');dl(P(27.5,0,.3),P(27.5,94,.3),'Plot 94\'0" (east side)');
+dl(P(24.7,10,1.6),P(24.7,85,1.6),'Cellar 75\'0"',P(24.7,60,1.6));dl(P(24.7,17,23.2),P(24.7,79,23.2),'House 62\'0"');
+dl(P(1.5,8.6,1.6),P(23.5,8.6,1.6),'Building 22\'0"',P(16,8.6,2.4));dl(P(24.7,30,0),P(24.7,30,26.5),'+26\'6" parapet',P(24.7,30,26.5));
+dl(P(-1.2,60,0),P(-1.2,60,12.5),'+12\'6" FF',P(-1.2,60,12.5));
+const na=new THREE.ArrowHelper(new THREE.Vector3(0,0,-1),P(32,4,.4),10,0xaa1111,2.5,1.5);dims.add(na);
+{const d=document.createElement('div');d.className='dim3';d.textContent='N';const o=new CSS2DObject(d);o.position.copy(P(32,-8,.4));dims.add(o);labels.push({o,g:dims,kind:'dim'})}
+// controls
+const $=id=>document.getElementById(id);
+function update(){const v=$('view').value,cut=$('cut').checked;
+ gF.visible=v!=='gf';gR.visible=v==='all';gFcut.visible=cut;gFfull.visible=!cut;dims.visible=$('dim').checked;
+ for(const l of labels){let on;
+  if(l.kind==='dim')on=$('dim').checked;
+  else{on=$('lbl').checked&&l.o.parent&&(l.g===site||(l.g===gG?v==='gf':l.g===gF?v==='ff':l.g===gR?v==='all':true))}
+  l.o.visible=!!on}}
+['view','cut','lbl','dim'].forEach(id=>$(id).addEventListener('change',update));update();
+addEventListener('resize',()=>{const w=host.clientWidth,h=host.clientHeight;cam.aspect=w/h;cam.updateProjectionMatrix();ren.setSize(w,h);lr.setSize(w,h)});
+(function loop(){requestAnimationFrame(loop);ctl.update();ren.render(scene,cam);lr.render(scene,cam)})();
+</script>
+</body></html>
